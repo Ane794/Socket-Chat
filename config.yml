@@ -1,0 +1,8 @@
+server:
+  port:
+  notification:
+
+client:
+  server:
+    host:
+    port:
