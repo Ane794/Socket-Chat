@@ -6,16 +6,24 @@
 
 #include "util/YamlConfig.h"
 
-
 using namespace asio;
 
 class Server {
     ip::port_type port;
     std::string notification;
+    std::string selfName, oppositeName;
+
 public:
-    explicit Server(ip::port_type port, std::string notification) :
+    Server(
+            ip::port_type port,
+            std::string notification,
+            std::string selfName,
+            std::string oppositeName
+    ) :
             port(port),
-            notification(std::move(notification)) {}
+            notification(std::move(notification)),
+            selfName(std::move(selfName)),
+            oppositeName(std::move(oppositeName)) {}
 
     [[noreturn]] void run() const {
         io_service service;
@@ -25,28 +33,46 @@ public:
         while (true) {
             ip::udp::endpoint senderEndpoint;
 
-            // 接收
+            /* 接收. */
             auto bytes = sock.receive_from(buffer(buff), senderEndpoint);
             std::string msg(buff, bytes);
-            std::cout << msg << std::endl;
-            sock.send_to(buffer(msg), senderEndpoint);
 
-            // 停止播放音效.
-            mciSendString(
-                    (std::string("stop ") + notification).c_str(),
-                    nullptr, 0, nullptr
-            );
-            // 播放音效.
-            mciSendString(
-                    (std::string("play ") + notification).c_str(),
-                    nullptr, 0, nullptr
-            );
+            /* 輸出時間. */
+            time_t t = time(nullptr);
+            char timeString[32];
+            strftime(timeString, sizeof(timeString), "\[%H:%M:%S]", localtime(&t));
+            std::cout << timeString << " ";
+
+            if (senderEndpoint.address() != ip::address::from_string("127.0.0.1")) {
+                std::cout << oppositeName << " > " << msg << std::endl;
+
+                /* 停止播放音效. */
+                mciSendString(
+                        (std::string("stop ") + notification).c_str(),
+                        nullptr, 0, nullptr
+                );
+
+                /* 播放音效. */
+                mciSendString(
+                        (std::string("play ") + notification).c_str(),
+                        nullptr, 0, nullptr
+                );
+            } else {
+                std::cout << selfName << " > " << msg << std::endl;
+            }
+
+            sock.send_to(buffer(msg), senderEndpoint);
         }
-    }
+    };
 };
 
 int main() {
     auto config = YamlConfig().getServerConfig();
 
-    Server(config["port"].as<int>(), config["notification"].as<std::string>()).run();
+    Server(
+            config["port"].as<int>(),
+            config["notification"].as<std::string>(),
+            config["selfName"].as<std::string>(),
+            config["oppositeName"].as<std::string>()
+    ).run();
 }

@@ -15,15 +15,20 @@ void sendMsg(const ip::udp::endpoint &endpoint, std::string msg) {
 }
 
 int main() {
-    auto config = YamlConfig().getClientConfig();
+    auto serverConfig = YamlConfig().getServerConfig(),
+            clientConfig = YamlConfig().getClientConfig();
 
     ip::udp::endpoint endpoint(
-            ip::address::from_string(config["server"]["host"].as<std::string>()),
-            config["server"]["port"].as<ip::port_type>()
+            ip::address::from_string(clientConfig["server"]["host"].as<std::string>()),
+            clientConfig["server"]["port"].as<ip::port_type>()
+    ), server(
+            ip::address::from_string("127.0.0.1"),
+            serverConfig["port"].as<ip::port_type>()
     );
 
     std::string msg;
     while (std::getline(std::cin, msg)) {
+        sendMsg(server, msg);
         sendMsg(endpoint, msg);
     }
 }

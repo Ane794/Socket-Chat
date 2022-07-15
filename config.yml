@@ -1,6 +1,8 @@
 server:
   port: 30000
   notification: notification.wav
+  selfName: 自己
+  oppositeName: 對方
 
 client:
   server:
