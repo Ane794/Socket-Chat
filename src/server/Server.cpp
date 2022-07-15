@@ -1,9 +1,14 @@
 #include "Server.h"
 
 #include <iostream>
+
+#ifdef _WIN32
+
 #include <mmsystem.h>
 
 #pragma comment (lib, "winmm.lib")
+
+#endif // _WIN32
 
 Server::Server(ip::port_type port, std::string notification, std::string selfName, std::string oppositeName) :
         port(port),
@@ -32,6 +37,7 @@ void Server::run() const {
         if (senderEndpoint.address() != ip::address::from_string("127.0.0.1")) {
             std::cout << oppositeName << " > " << msg << std::endl;
 
+#ifdef _WIN32
             /* 停止播放音效. */
             mciSendString(
                     (std::string("stop ") + notification).c_str(),
@@ -43,6 +49,8 @@ void Server::run() const {
                     (std::string("play ") + notification).c_str(),
                     nullptr, 0, nullptr
             );
+#endif // _WIN32
+
         } else {
             std::cout << selfName << " > " << msg << std::endl;
         }
