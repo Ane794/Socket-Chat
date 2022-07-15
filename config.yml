@@ -1,8 +1,8 @@
 server:
-  port:
-  notification:
+  port: 30000
+  notification: notification.wav
 
 client:
   server:
-    host:
-    port:
+    host: 192.168.0.1
+    port: 30000
