@@ -27,8 +27,10 @@ int main() {
     );
 
     std::string msg;
+    std::cout << " > ";
     while (std::getline(std::cin, msg)) {
         sendMsg(server, msg);
         sendMsg(endpoint, msg);
+        std::cout << " > ";
     }
 }
